@@ -1,0 +1,20 @@
+# Editors and workspace
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# PowerShell artifacts
+*.ps1.orig
+*.ps1.tmp
+*.log
+
+# Output artifacts
+*.json
+*.csv
+*.xml
+
+# Local env
+.env
