@@ -134,9 +134,3 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 - **Invalid timezone**: Provide a Windows timezone name or a supported shorthand (e.g., `PST`).
 - **Inspect CLI call**: Use `-WhatIf` to see the exact `az` command the script would run.
 
-## Future Enhancements
-
-- Add fuzzy scoring for patterns.
-- Cache service list for faster automation.
-- Add retry logic & transient error handling.
-- Localization of prompts & messages.
