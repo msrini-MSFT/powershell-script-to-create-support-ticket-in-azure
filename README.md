@@ -79,6 +79,21 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive -AutoPickFirst `
     -OutputJsonFile ticket.json
 ```
 
+### Example Output
+After a successful ticket creation, the script prints the most important fields for quick reference:
+
+```text
+Ticket Created Successfully!
+SupportTicketId: 2511250010001626
+Title: assign to msrini - test SR
+Severity: Moderate
+Status: Open
+```
+
+Notes:
+- `SupportTicketId` is the numeric ID from Azure Support (preferred). If not available, the script falls back to the ARM `name` or `id`.
+- Newlines are rendered correctly using PowerShell's `` `n `` to keep the output tidy.
+
 ### Fully ID driven (skip pattern logic)
 If you already know the `ServiceId` and `ProblemClassificationId`:
 ```powershell
