@@ -30,7 +30,7 @@ Skips interactive selection; expects ServiceId, ProblemClassificationId, Title, 
 [CmdletBinding()]param(
     [string]$SubscriptionId,
     [switch]$WhatIf,
-    [ValidateSet('critical','severe','moderate','minimal')][string]$DefaultSeverity,
+    [ValidateSet('critical','severe','moderate','minimal','A','B','C','1')][string]$DefaultSeverity,
     [switch]$NonInteractive,
     [string]$ServiceId,
     [string]$ProblemClassificationId,
@@ -264,7 +264,11 @@ function Create-SupportTicket($Params) {
     $json = az @cmd 2>&1
     $exitCode = $LASTEXITCODE
     if ($exitCode -ne 0) {
-        Write-Error "Azure CLI command failed with exit code $exitCode. Output: $($json -join ' ')"
+        $joined = ($json -join ' ')
+        if ($joined -match 'highestcriticalimpact' -or $joined -match 'highestcriticalseverity') {
+            Write-Warning 'Request for highest critical impact severity appears to be restricted. Your support plan may not allow Sev 1. Please retry with A, B or C.'
+        }
+        Write-Error "Azure CLI command failed with exit code $exitCode. Output: $joined"
         throw 'Ticket creation failed.'
     }
     if (-not $json) { throw 'Ticket creation returned no output.' }
@@ -320,14 +324,29 @@ try {
     }
     Ensure-Value $ProblemClassificationId 'ProblemClassificationId'
 
+    # Normalize provided default severity if user passed letter or 1
+    if ($DefaultSeverity) {
+        $inputNorm = $DefaultSeverity.ToUpper().Trim()
+        switch ($inputNorm) {
+            "1" { $DefaultSeverity = "critical" }
+            "A" { $DefaultSeverity = "critical" }
+            "B" { $DefaultSeverity = "moderate" }
+            "C" { $DefaultSeverity = "minimal" }
+        }
+    }
+
     if (-not $DefaultSeverity) {
-        Write-Host '\nSeverity options: critical, severe, moderate, minimal' -ForegroundColor Cyan
-        $severityInput = Read-Host 'Enter severity (default: minimal)'
+        Write-Host '\nSeverity choices:' -ForegroundColor Cyan
+        Write-Host '  1 : Highest critical impact (Premium support only; may fail if plan not eligible)' -ForegroundColor Yellow
+        Write-Host '  A : Critical' -ForegroundColor Yellow
+        Write-Host '  B : Moderate' -ForegroundColor Yellow
+        Write-Host '  C : Minimal (default)' -ForegroundColor Yellow
+        $severityInput = Read-Host 'Enter severity (1/A/B/C) [default: C]'
         if ([string]::IsNullOrWhiteSpace($severityInput)) {
             $DefaultSeverity = "minimal"
         } else {
-            # Map letter or full name to valid severity
             switch ($severityInput.ToUpper().Trim()) {
+                "1" { $DefaultSeverity = "critical" }
                 "A" { $DefaultSeverity = "critical" }
                 "B" { $DefaultSeverity = "moderate" }
                 "C" { $DefaultSeverity = "minimal" }
@@ -335,7 +354,7 @@ try {
                 "SEVERE" { $DefaultSeverity = "severe" }
                 "MODERATE" { $DefaultSeverity = "moderate" }
                 "MINIMAL" { $DefaultSeverity = "minimal" }
-                default { $DefaultSeverity = $severityInput }
+                default { $DefaultSeverity = "minimal"; Write-Warning 'Unrecognized input; defaulting to minimal.' }
             }
         }
     }

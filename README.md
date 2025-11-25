@@ -1,7 +1,9 @@
-# Azure Support Ticket PowerShell Script
+# PowerShell script to create Support ticket in Azure
 
 ## Overview
 `Create-AzureSupportTicket.ps1` creates Azure Support tickets using the Azure CLI. You can run it interactively or supply patterns/IDs for fully automated (non-interactive) execution.
+
+This script is especially useful during Azure Portal outages or when the Portal is unavailable, because it relies only on PowerShell and the Azure CLI (no Portal dependency).
 
 Flow:
 1. Fetch support services (`az support services list`).
@@ -98,7 +100,12 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 
 - `-SubscriptionId`: Azure subscription GUID. If omitted, uses current `az account show` context.
 - `-WhatIf`: Prints the exact `az` command; does not create a ticket.
-- `-DefaultSeverity`: One of `critical | severe | moderate | minimal`. Interactive prompt also accepts `A`→`critical`, `B`→`moderate`, `C`→`minimal`.
+- `-DefaultSeverity`: Accepts `1 | A | B | C | critical | severe | moderate | minimal`. The interactive prompt allows one-character input:
+    - `1` → attempts highest critical impact (maps to `critical`; may fail if subscription/support plan not eligible)
+    - `A` → `critical`
+    - `B` → `moderate`
+    - `C` → `minimal` (default)
+    If an ineligible highest impact is chosen, Azure may return an error indicating plan restrictions.
 - `-NonInteractive`: Skips interactive menus; provide IDs or patterns for service/classification and all contact details.
 - `-ServiceId`: Full service resource ID from `az support services list` (e.g., `/providers/Microsoft.Support/services/virtual-machines`).
 - `-ProblemClassificationId`: Full problem classification ID under the selected service.
@@ -116,7 +123,7 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 
 ## Input Normalization
 
-- **Severity mapping**: `A`→`critical`, `B`→`moderate`, `C`→`minimal`; full names also accepted.
+- **Severity mapping**: `1`→`critical` (Premium-only Highest critical impact), `A`→`critical`, `B`→`moderate`, `C`→`minimal`; full names also accepted. If `1` fails due to plan limits, re-run selecting `A`, `B`, or `C`.
 - **Timezone mapping**: Accepts common forms like `PST`, `EST`, `UTC-8`, `UTC+0` and converts to Windows timezone names.
 - **Country code mapping**: Accepts alpha-2 codes (`US`, `GB`, `DE`, etc.) and converts to alpha-3 (`USA`, `GBR`, `DEU`).
 
