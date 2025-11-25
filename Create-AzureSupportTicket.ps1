@@ -194,6 +194,9 @@ function Normalize-TimeZone([string]$TimeZone) {
         'UTC+0' = 'UTC'
         'UTC+1' = 'W. Europe Standard Time'
         'UTC+8' = 'Singapore Standard Time'
+        'IST' = 'India Standard Time'
+        'UTC+5:30' = 'India Standard Time'
+        'UTC+0530' = 'India Standard Time'
     }
     
     $tzUpper = $TimeZone.Trim().ToUpper()

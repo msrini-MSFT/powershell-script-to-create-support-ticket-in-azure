@@ -125,6 +125,7 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 
 - **Severity mapping**: `1`→`highestcriticalimpact` (Premium-only), `A`→`critical`, `B`→`moderate`, `C`→`minimal`; full names also accepted. If `1` fails due to plan limits, re-run selecting `A`, `B`, or `C`.
 - **Timezone mapping**: Accepts common forms like `PST`, `EST`, `UTC-8`, `UTC+0` and converts to Windows timezone names.
+ - **Timezone mapping**: Accepts common forms like `PST`, `EST`, `UTC-8`, `UTC+0`, `IST` (mapped to `India Standard Time`), and converts them to Windows timezone names.
 - **Country code mapping**: Accepts alpha-2 codes (`US`, `GB`, `DE`, etc.) and converts to alpha-3 (`USA`, `GBR`, `DEU`).
 
 ## Notes
