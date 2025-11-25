@@ -120,12 +120,17 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 - `-ContactLanguage`: Preferred language tag (default `en-US`).
 - `-ContactMethod`: `email` (default) or `phone`.
 - `-OutputJsonFile`: If provided, writes the created ticket JSON to this file.
+- `-TechnicalResourceId`: Optional full Azure resource ID for technical tickets (e.g. `/subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Compute/virtualMachines/<vmName>`). When supplied, passed as `--technical-resource` to Azure CLI.
 
 ## Input Normalization
 
 - **Severity mapping**: `1`→`highestcriticalimpact` (Premium-only), `A`→`critical`, `B`→`moderate`, `C`→`minimal`; full names also accepted. If `1` fails due to plan limits, re-run selecting `A`, `B`, or `C`.
 - **Timezone mapping**: Accepts common forms like `PST`, `EST`, `UTC-8`, `UTC+0` and converts to Windows timezone names.
  - **Timezone mapping**: Accepts common forms like `PST`, `EST`, `UTC-8`, `UTC+0`, `IST` (mapped to `India Standard Time`), and converts them to Windows timezone names.
+ - **Technical resource ID**: Not modified; basic format warning if it does not start with `/subscriptions/`. Retrieve via:
+     - VM: `az vm show -g <rg> -n <vmName> --query id -o tsv`
+     - Storage account: `az storage account show -g <rg> -n <acct> --query id -o tsv`
+     - Generic: `az resource show --ids <resourceId> --query id -o tsv`
 - **Country code mapping**: Accepts alpha-2 codes (`US`, `GB`, `DE`, etc.) and converts to alpha-3 (`USA`, `GBR`, `DEU`).
 
 ## Notes

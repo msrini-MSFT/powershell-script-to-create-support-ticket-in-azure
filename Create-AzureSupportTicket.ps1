@@ -26,6 +26,9 @@ Optional default severity (critical|severe|moderate|minimal). Prompts if not pro
 .PARAMETER NonInteractive
 Skips interactive selection; expects ServiceId, ProblemClassificationId, Title, Description, Contact parameters pre-supplied.
 
+.PARAMETER TechnicalResourceId
+Optional Azure resource ID (e.g. /subscriptions/<sub>/resourceGroups/<rg>/providers/Microsoft.Compute/virtualMachines/<vmName>) used for technical tickets. Adds --technical-resource when provided.
+
 #>
 [CmdletBinding()]param(
     [string]$SubscriptionId,
@@ -47,6 +50,7 @@ Skips interactive selection; expects ServiceId, ProblemClassificationId, Title, 
     [string]$ContactTimeZone,
     [string]$ContactLanguage = 'en-US',
     [ValidateSet('email','phone')][string]$ContactMethod = 'email',
+    [string]$TechnicalResourceId,
     [string]$OutputJsonFile
 )
 
@@ -255,6 +259,7 @@ function Create-SupportTicket($Params) {
         '--advanced-diagnostic-consent', 'Yes',
         '--output','json'
     )
+    if ($Params.TechnicalResourceId) { $cmd += @('--technical-resource',$Params.TechnicalResourceId) }
     if ($Params.SubscriptionId) { $cmd += @('--subscription',$Params.SubscriptionId) }
 
     $displayCmd = 'az ' + ($cmd -join ' ')
@@ -375,6 +380,15 @@ try {
     $ContactTimeZone = Normalize-TimeZone $ContactTimeZone
     $ContactCountry = Normalize-CountryCode $ContactCountry
 
+    # Optional technical resource id prompt (only if not supplied already)
+    if (-not $TechnicalResourceId) {
+        $TechnicalResourceId = Read-IfEmpty $TechnicalResourceId 'Technical Azure Resource Id (optional - press Enter to skip)' -DefaultValue ''
+    }
+    # Basic validation if provided
+    if ($TechnicalResourceId -and ($TechnicalResourceId -notmatch '^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/[^/]+/.+')) {
+        Write-Warning 'TechnicalResourceId does not look like a full Azure resource ID; proceeding anyway.'
+    }
+
     $requiredFields = @{
         'Title' = $Title
         'Description' = $Description
@@ -406,6 +420,7 @@ try {
         ContactLanguage        = $ContactLanguage
         ContactMethod          = $ContactMethod
         SubscriptionId         = $SubscriptionId
+        TechnicalResourceId    = $TechnicalResourceId
     }
 
     $ticket = Create-SupportTicket -Params $params
