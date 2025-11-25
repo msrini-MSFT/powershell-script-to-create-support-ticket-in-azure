@@ -103,7 +103,7 @@ function Resolve-ServiceByPattern($Services, [string]$Pattern, [switch]$ErrorIfM
 
 function Select-SupportService ($Services) {
     if ($Services.Count -eq 0) { throw 'No services returned.' }
-    Write-Host "\nAvailable Support Services:" -ForegroundColor Cyan
+    Write-Host "`nAvailable Support Services:" -ForegroundColor Cyan
     $indexed = $Services | Sort-Object displayName | ForEach-Object { $_ }
     $i = 1
     foreach ($s in $indexed) {
@@ -145,7 +145,7 @@ function Resolve-ProblemClassificationByPattern($ProblemClassifications, [string
 
 function Select-ProblemClassification($ProblemClassifications) {
     if ($ProblemClassifications.Count -eq 0) { throw 'No problem classifications returned.' }
-    Write-Host "\nProblem Classifications:" -ForegroundColor Cyan
+    Write-Host "`nProblem Classifications:" -ForegroundColor Cyan
     $sorted = $ProblemClassifications | Sort-Object displayName
     $i = 1
     foreach ($pc in $sorted) {
@@ -263,7 +263,7 @@ function Create-SupportTicket($Params) {
     if ($Params.SubscriptionId) { $cmd += @('--subscription',$Params.SubscriptionId) }
 
     $displayCmd = 'az ' + ($cmd -join ' ')
-    Write-Host "\nExecuting: $displayCmd" -ForegroundColor Yellow
+    Write-Host "`nExecuting: $displayCmd" -ForegroundColor Yellow
 
     if ($WhatIf) {
         Write-Host 'WhatIf specified. Ticket not created.' -ForegroundColor Magenta
@@ -281,18 +281,25 @@ function Create-SupportTicket($Params) {
     }
     if (-not $json) { throw 'Ticket creation returned no output.' }
     $ticket = $json | ConvertFrom-Json
-    Write-Host "\nTicket Created Successfully!" -ForegroundColor Green
-    Write-Host "Ticket Name: $ticketName" -ForegroundColor Cyan
-    if ($ticket.properties) {
-        Write-Host "Title: $($ticket.properties.title)" -ForegroundColor Cyan
-        Write-Host "Status: $($ticket.properties.status)" -ForegroundColor Cyan
-        Write-Host "Severity: $($ticket.properties.severity)" -ForegroundColor Cyan
-        if ($ticket.properties.supportTicketId) {
-            Write-Host "Support Ticket ID: $($ticket.properties.supportTicketId)" -ForegroundColor Cyan
-        }
-    } else {
-        Write-Host "Ticket ID: $($ticket.id)" -ForegroundColor Cyan
-    }
+    Write-Host "`nTicket Created Successfully!" -ForegroundColor Green
+    # Prefer numeric support ticket id; fallback to name/id
+    $supportId = $ticket.supportTicketId
+    if (-not $supportId -and $ticket.properties) { $supportId = $ticket.properties.supportTicketId }
+    if (-not $supportId -and $ticket.name) { $supportId = $ticket.name }
+    if (-not $supportId) { $supportId = $ticket.id }
+
+    # Title, Severity, Status from root if available; fallback to properties
+    $outTitle = $ticket.title
+    if (-not $outTitle -and $ticket.properties) { $outTitle = $ticket.properties.title }
+    $outSeverity = $ticket.severity
+    if (-not $outSeverity -and $ticket.properties) { $outSeverity = $ticket.properties.severity }
+    $outStatus = $ticket.status
+    if (-not $outStatus -and $ticket.properties) { $outStatus = $ticket.properties.status }
+
+    Write-Host "SupportTicketId: $supportId" -ForegroundColor Cyan
+    if ($outTitle) { Write-Host "Title: $outTitle" -ForegroundColor Cyan }
+    if ($outSeverity) { Write-Host "Severity: $outSeverity" -ForegroundColor Cyan }
+    if ($outStatus) { Write-Host "Status: $outStatus" -ForegroundColor Cyan }
     return $ticket
 }
 
@@ -344,7 +351,7 @@ try {
     }
 
     if (-not $DefaultSeverity) {
-        Write-Host '\nSeverity choices (API values shown in parentheses):' -ForegroundColor Cyan
+        Write-Host "`nSeverity choices (API values shown in parentheses):" -ForegroundColor Cyan
         Write-Host '  1 : Highest critical impact (highestcriticalimpact) - Premium support only; may fail if plan not eligible' -ForegroundColor Yellow
         Write-Host '  A : Critical (critical)' -ForegroundColor Yellow
         Write-Host '  B : Moderate (moderate)' -ForegroundColor Yellow
