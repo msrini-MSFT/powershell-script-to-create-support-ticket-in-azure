@@ -30,7 +30,7 @@ Skips interactive selection; expects ServiceId, ProblemClassificationId, Title, 
 [CmdletBinding()]param(
     [string]$SubscriptionId,
     [switch]$WhatIf,
-    [ValidateSet('critical','severe','moderate','minimal','A','B','C','1')][string]$DefaultSeverity,
+    [ValidateSet('minimal','moderate','critical','highestcriticalimpact','A','B','C','1')][string]$DefaultSeverity,
     [switch]$NonInteractive,
     [string]$ServiceId,
     [string]$ProblemClassificationId,
@@ -328,7 +328,7 @@ try {
     if ($DefaultSeverity) {
         $inputNorm = $DefaultSeverity.ToUpper().Trim()
         switch ($inputNorm) {
-            "1" { $DefaultSeverity = "critical" }
+            "1" { $DefaultSeverity = "highestcriticalimpact" }
             "A" { $DefaultSeverity = "critical" }
             "B" { $DefaultSeverity = "moderate" }
             "C" { $DefaultSeverity = "minimal" }
@@ -336,22 +336,22 @@ try {
     }
 
     if (-not $DefaultSeverity) {
-        Write-Host '\nSeverity choices:' -ForegroundColor Cyan
-        Write-Host '  1 : Highest critical impact (Premium support only; may fail if plan not eligible)' -ForegroundColor Yellow
-        Write-Host '  A : Critical' -ForegroundColor Yellow
-        Write-Host '  B : Moderate' -ForegroundColor Yellow
-        Write-Host '  C : Minimal (default)' -ForegroundColor Yellow
+        Write-Host '\nSeverity choices (API values shown in parentheses):' -ForegroundColor Cyan
+        Write-Host '  1 : Highest critical impact (highestcriticalimpact) - Premium support only; may fail if plan not eligible' -ForegroundColor Yellow
+        Write-Host '  A : Critical (critical)' -ForegroundColor Yellow
+        Write-Host '  B : Moderate (moderate)' -ForegroundColor Yellow
+        Write-Host '  C : Minimal (minimal) [default]' -ForegroundColor Yellow
         $severityInput = Read-Host 'Enter severity (1/A/B/C) [default: C]'
         if ([string]::IsNullOrWhiteSpace($severityInput)) {
             $DefaultSeverity = "minimal"
         } else {
             switch ($severityInput.ToUpper().Trim()) {
-                "1" { $DefaultSeverity = "critical" }
+                "1" { $DefaultSeverity = "highestcriticalimpact" }
                 "A" { $DefaultSeverity = "critical" }
                 "B" { $DefaultSeverity = "moderate" }
                 "C" { $DefaultSeverity = "minimal" }
+                "HIGHESTCRITICALIMPACT" { $DefaultSeverity = "highestcriticalimpact" }
                 "CRITICAL" { $DefaultSeverity = "critical" }
-                "SEVERE" { $DefaultSeverity = "severe" }
                 "MODERATE" { $DefaultSeverity = "moderate" }
                 "MINIMAL" { $DefaultSeverity = "minimal" }
                 default { $DefaultSeverity = "minimal"; Write-Warning 'Unrecognized input; defaulting to minimal.' }

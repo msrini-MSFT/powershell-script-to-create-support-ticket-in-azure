@@ -100,12 +100,12 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 
 - `-SubscriptionId`: Azure subscription GUID. If omitted, uses current `az account show` context.
 - `-WhatIf`: Prints the exact `az` command; does not create a ticket.
-- `-DefaultSeverity`: Accepts `1 | A | B | C | critical | severe | moderate | minimal`. The interactive prompt allows one-character input:
-    - `1` → attempts highest critical impact (maps to `critical`; may fail if subscription/support plan not eligible)
+- `-DefaultSeverity`: Accepts `1 | A | B | C | highestcriticalimpact | critical | moderate | minimal`. The interactive prompt allows one-character input:
+    - `1` → `highestcriticalimpact` (Premium support only; will fail if plan not eligible)
     - `A` → `critical`
     - `B` → `moderate`
     - `C` → `minimal` (default)
-    If an ineligible highest impact is chosen, Azure may return an error indicating plan restrictions.
+    If an ineligible highest impact is chosen, Azure will return an error indicating plan restrictions.
 - `-NonInteractive`: Skips interactive menus; provide IDs or patterns for service/classification and all contact details.
 - `-ServiceId`: Full service resource ID from `az support services list` (e.g., `/providers/Microsoft.Support/services/virtual-machines`).
 - `-ProblemClassificationId`: Full problem classification ID under the selected service.
@@ -123,7 +123,7 @@ pwsh -File .\Create-AzureSupportTicket.ps1 -NonInteractive `
 
 ## Input Normalization
 
-- **Severity mapping**: `1`→`critical` (Premium-only Highest critical impact), `A`→`critical`, `B`→`moderate`, `C`→`minimal`; full names also accepted. If `1` fails due to plan limits, re-run selecting `A`, `B`, or `C`.
+- **Severity mapping**: `1`→`highestcriticalimpact` (Premium-only), `A`→`critical`, `B`→`moderate`, `C`→`minimal`; full names also accepted. If `1` fails due to plan limits, re-run selecting `A`, `B`, or `C`.
 - **Timezone mapping**: Accepts common forms like `PST`, `EST`, `UTC-8`, `UTC+0` and converts to Windows timezone names.
 - **Country code mapping**: Accepts alpha-2 codes (`US`, `GB`, `DE`, etc.) and converts to alpha-3 (`USA`, `GBR`, `DEU`).
 
